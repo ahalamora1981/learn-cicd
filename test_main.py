@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from main import app, items_db, current_id
+from main import app
 
 client = TestClient(app)
 
