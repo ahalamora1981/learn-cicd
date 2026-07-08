@@ -14,6 +14,11 @@ items_db: dict[int, Item] = {}
 current_id = 0
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
