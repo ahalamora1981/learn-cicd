@@ -3,23 +3,28 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+
 class Item(BaseModel):
     name: str
     price: float
     is_offer: bool = False
 
+
 items_db: dict[int, Item] = {}
 current_id = 0
+
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int):
     if item_id not in items_db:
         return {"error": "Item not found"}
     return items_db[item_id]
+
 
 @app.post("/items/")
 def create_item(item: Item):
