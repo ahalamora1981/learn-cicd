@@ -18,6 +18,7 @@ current_id = 0
 def health_check():
     return {"status": "healthy"}
 
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
