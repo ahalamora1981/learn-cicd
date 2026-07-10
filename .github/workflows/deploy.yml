@@ -48,6 +48,7 @@ jobs:
           mv learn-cicd-main learn-cicd
           rm main.zip
           cd /root/learn-cicd
+          export UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
           /root/.local/bin/uv sync --quiet
           pkill -f "uvicorn main:app" || true
           nohup /root/.local/bin/uv run uvicorn main:app --host 0.0.0.0 --port 80 > /dev/null 2>&1 &
