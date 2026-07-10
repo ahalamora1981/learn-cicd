@@ -52,4 +52,4 @@ jobs:
           /root/.local/bin/uv sync --quiet
           pkill -f "uvicorn main:app" || true
           nohup /root/.local/bin/uv run uvicorn main:app --host 0.0.0.0 --port 80 > /dev/null 2>&1 &
-          echo "Deploy done"
+          echo "Deploy done" 
