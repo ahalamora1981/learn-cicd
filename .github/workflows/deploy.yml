@@ -32,24 +32,31 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1
+    - name: Setup SSH key
+      uses: webfactory/ssh-agent@v0.9.0
       with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.DEPLOY_KEY }}
-        timeout: 60s
-        command_timeout: 10m
-        script: |
-          rm -rf /root/learn-cicd
-          cd /root
-          wget -q https://github.com/${{ github.repository }}/archive/refs/heads/main.zip -O main.zip
-          unzip -q main.zip
-          mv learn-cicd-main learn-cicd
-          rm main.zip
-          cd /root/learn-cicd
-          export UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
-          /root/.local/bin/uv sync --quiet
-          pkill -f "uvicorn main:app" || true
-          nohup /root/.local/bin/uv run uvicorn main:app --host 0.0.0.0 --port 80 > /dev/null 2>&1 &
-          echo "Deploy done"
+        ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+    - name: Add server to known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -p 22 ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+    - name: Deploy to server
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+        set -e
+        cd /root
+        rm -rf learn-cicd
+        wget -q https://github.com/${{ github.repository }}/archive/refs/heads/main.zip -O main.zip
+        unzip -q main.zip
+        mv learn-cicd-main learn-cicd
+        rm main.zip
+        cd learn-cicd
+        export UV_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
+        /root/.local/bin/uv sync
+        pkill -f "uvicorn main:app" || true
+        sleep 1
+        nohup /root/.local/bin/uv run uvicorn main:app --host 0.0.0.0 --port 80 > /root/uvicorn.log 2>&1 &
+        echo "Deploy done at $(date)"
+        EOF
